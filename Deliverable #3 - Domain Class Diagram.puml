@@ -1,0 +1,194 @@
+@startuml CES - Domain Class Diagram
+
+' ─────────────────────────────────────────
+'  ENUMERATION CLASSES:
+' ─────────────────────────────────────────
+enum UserTypes{
+    CUSTOMER
+    ADMIN
+}
+
+enum CustomerStatus {
+    ACTIVE
+    INACTIVE
+    SUSPENDED
+}
+
+enum TicketType {
+    ADULT
+    SENIOR
+    CHILD
+}
+
+enum PromotionType {
+    PercentageDiscount
+    FixedDiscount
+    Buy1Get1Free
+}
+
+' ─────────────────────────────────────────
+'  USER HIERARCHY CLASSES:
+' ─────────────────────────────────────────
+
+abstract class User {
+    - userID: String
+    - email: String
+    - password: String
+}
+
+class Admin {
+    - name: String
+}
+
+class Customer {
+    - firstName: String
+    - lastName: String
+    - status: CustomerStatus
+}
+
+User <|-- Admin
+User <|-- Customer
+
+' ─────────────────────────────────────────
+'  PAYMENT CARD & ADDRESS CLASSES:
+' ─────────────────────────────────────────
+
+class PaymentCard {
+    - cardNumber: String
+    - expirationDate: Date
+    - billingAddress: Address
+}
+
+class Address {
+    - street: String
+    - city: String
+    - state: String
+    - zipCode: String
+    - country: String
+}
+
+Customer "1" o-- "0..3" PaymentCard   : stores >
+Customer "1" o-- "0..1" Address       : mailing address >
+PaymentCard "1" *-- "1" Address       : billing address >
+
+' ─────────────────────────────────────────
+'  MOVIE INFORMATION CLASS
+' ─────────────────────────────────────────
+
+class Movie {
+    - movieID       : String
+    - title         : String
+    - genre         : String
+    - director      : String
+    - producer      : String
+    - cast          : List<String>
+    - duration      : Integer
+    - rating        : String
+    - reviews       : List<String>
+    - synopsis      : String
+    - showeDate     : Date
+    - showTime      : Time
+    - posterURL     : String
+    - trailerVideo  : String
+}
+
+Customer "0..*" -- "0..*" Movie : favorites >
+
+' ─────────────────────────────────────────
+'  RECOMMENDATION CLASS:
+' ─────────────────────────────────────────
+
+class Recommendation {
+    - recommendationID: String
+    - filmPreference: String
+    - similarMovieBooked: String
+}
+
+Customer    "1"    -- "0..*" Recommendation : receives >
+Movie       "1"    -- "0..*" Recommendation : featured in >
+
+' ─────────────────────────────────────────
+'  CINEMA & SHOWROOMS
+' ─────────────────────────────────────────
+
+class Theater {
+    - theaterID: String
+    - name: String
+}
+
+class Showroom {
+    - showroomID: String
+    - name: String
+    - totalSeats: Integer
+}
+
+class Seat {
+    - seatID: String
+    - row: String
+    - seatNumber: Integer
+}
+
+Theater  "1" *-- "1..*" Showroom : contains >
+Showroom "1" *-- "1..*" Seat    : has >
+
+' ─────────────────────────────────────────
+'  SHOW (SHOWTIME)
+' ─────────────────────────────────────────
+
+class Show {
+    - showID: String
+    - date: Date
+    - time: Time
+    - duration: Integer
+}
+
+Showroom "1" -- "0..*" Show  : broadcasts >
+Movie    "1" -- "0..*" Show  : schedules as >
+
+' ─────────────────────────────────────────
+'  BOOKING & TICKET
+' ─────────────────────────────────────────
+
+class Booking {
+    - bookingID: String
+    - bookingDate: Date
+    - totalAmount: Double
+}
+
+class Ticket {
+    - ticketID  : String
+    - ticketType : TicketType
+    - price      : Double
+}
+
+class TicketPrice {
+    - ticketType : TicketType
+    - price      : Double
+}
+
+Customer "1"    -- "0..*" Booking  : makes >
+Booking  "1"    *-- "1..*" Ticket  : contains >
+Show     "1"    -- "0..*" Booking  : for >
+Ticket   "1"    -- "1"    Seat     : assigned to >
+TicketPrice "1" -- "0..*" Ticket   : priced by >
+
+' ─────────────────────────────────────────
+'  PROMOTION
+' ─────────────────────────────────────────
+
+class Promotion {
+    - promotionID   : String
+    - code          : String
+    - description   : String
+    - type          : PromotionType
+    - discountValue : Double
+    - startDate     : Date
+    - endDate       : Date
+}
+
+Promotion "0..1" -- "0..*" Booking : applies >
+
+@enduml
+
+
+
